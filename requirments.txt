@@ -1,0 +1,5 @@
+python-dotenv
+docopt
+python-binance
+websocket-client
+duckdb
