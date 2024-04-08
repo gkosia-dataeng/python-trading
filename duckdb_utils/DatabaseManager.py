@@ -2,6 +2,8 @@ import duckdb
 from datetime import datetime
 import logging
 from decimal import Decimal
+import numpy
+import pandas
 
 class DatabaseManager:
 
@@ -42,8 +44,10 @@ class DatabaseManager:
                                    ,total_volume = total_volume + {total_volume}
                             """)
         
-        '''
-        result = self.__conn.execute("SELECT * FROM aggregated_trades")
+    
+
+    def print_latest_data(self):
+        result = self.__conn.execute("SELECT * FROM aggregated_trades order by time_zone desc limit 10")
 
         # Fetch all rows from the result
         rows = result.fetchall()
@@ -52,4 +56,10 @@ class DatabaseManager:
         print("Table: sample_table")
         for row in rows:
             print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4])
-        '''
+
+
+    def get_byprice_bytime_as_df(self) :
+        raw_df =  self.__conn.cursor().query("SELECT * FROM aggregated_trades where CAST(time_zone AS TIMESTAMP WITH TIME ZONE) >= (now() - INTERVAL '60 minutes')").to_df()
+        raw_df = raw_df.pivot_table(index='price_zone', columns='time_zone',values=['buy_volume', 'sell_volume', 'total_volume'], aggfunc='sum' )
+        print(raw_df)
+        return raw_df

@@ -3,3 +3,9 @@ docopt
 python-binance
 websocket-client
 duckdb
+dash
+dash-renderer
+dash_html_components
+dash_core_components
+numpy
+pandas

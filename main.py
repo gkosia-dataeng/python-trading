@@ -6,18 +6,21 @@
 
 """
 import os
+from time import sleep
 from docopt import docopt
 from dotenv import load_dotenv
 import logging
+from threading import Thread
 
 from binance_utils.BinanceAPIManager import BinanceAPIManager
 from duckdb_utils.DatabaseManager  import DatabaseManager
+from webapp.app import WebApp
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 if __name__ == '__main__':
-    
+
     # get binance api credentials
     load_dotenv()
     binance_key = os.getenv('binance-api-key')
@@ -35,4 +38,12 @@ if __name__ == '__main__':
     
     # initiate the binance client
     binance_client = BinanceAPIManager(binance_key, binance_secret, symbol, db)
-    binance_client.start_stream()
+
+    loading_data_thread = Thread(target=binance_client.start_stream, daemon=True, name='Get data form binance')
+    loading_data_thread.start()
+    
+
+    # initiate the app
+    WebApp.set_db_conn(db)
+    app = WebApp.initiate_app()
+    app.run_server(port=4050)
